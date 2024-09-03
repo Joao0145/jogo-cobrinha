@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Cobrinha</title>
+    <style>
+        #canvas {
+            background-color: black;
+            display: block;
+            margin: auto;
+        }
+        body {
+            text-align: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Jogo da Cobrinha</h1>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <script>
+        // Definição do tamanho do grid
+        const box = 20;
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Inicialização da cobra
+        let snake = [{ x: 10 * box, y: 10 * box }];
+        let food = { x: Math.floor(Math.random() * 20) * box, y: Math.floor(Math.random() * 20) * box };
+        let score = 0;
+        let direction = null;
+
+        // Controles
+        document.addEventListener("keydown", directionControl);
+
+        function directionControl(event) {
+            if (event.keyCode === 37 && direction !== "RIGHT") direction = "LEFT";
+            else if (event.keyCode === 38 && direction !== "DOWN") direction = "UP";
+            else if (event.keyCode === 39 && direction !== "LEFT") direction = "RIGHT";
+            else if (event.keyCode === 40 && direction !== "UP") direction = "DOWN";
+        }
+
+        // Função de desenho da cobra
+        function drawSnake() {
+            snake.forEach(segment => {
+                ctx.fillStyle = "green";
+                ctx.fillRect(segment.x, segment.y, box, box);
+            });
+        }
+
+        // Função de desenho da comida
+        function drawFood() {
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, box, box);
+        }
+
+        // Função de atualização do jogo
+        function update() {
+            // Movimento da cobra
+            let head = { x: snake[0].x, y: snake[0].y };
+            if (direction === "LEFT") head.x -= box;
+            if (direction === "UP") head.y -= box;
+            if (direction === "RIGHT") head.x += box;
+            if (direction === "DOWN") head.y += box;
+
+            // Verificar se a cobra comeu a comida
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                food = { x: Math.floor(Math.random() * 20) * box, y: Math.floor(Math.random() * 20) * box };
+            } else {
+                // Remover o último segmento da cobra
+                snake.pop();
+            }
+
+            // Adicionar nova cabeça da cobra
+            snake.unshift(head);
+
+            // Verificar colisão com as bordas
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                clearInterval(game);
+                alert("Game Over! Pontuação: " + score);
+                return;
+            }
+
+            // Verificar colisão com o próprio corpo
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    clearInterval(game);
+                    alert("Game Over! Pontuação: " + score);
+                    return;
+                }
+            }
+
+            // Limpar o canvas e desenhar novamente
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawSnake();
+            drawFood();
+        }
+
+        // Iniciar o jogo
+        const game = setInterval(update, 100);
+    </script>
+</body>
+</html>
